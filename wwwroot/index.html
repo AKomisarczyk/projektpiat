@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wymiana Waluty</title>
+    <script>
+        let isLoggedIn = false;  // Zmienna do śledzenia stanu logowania
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            console.log("Login request initiated");
+
+            const response = await fetch('/api/AutentKontroler/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                isLoggedIn = true;  // Ustawienie stanu logowania na true
+                document.getElementById('loginMessage').innerText = 'Login successful';
+                console.log("Login successful");
+            } else {
+                isLoggedIn = false;  // Ustawienie stanu logowania na false
+                document.getElementById('loginMessage').innerText = `Login failed: ${data.message}`;
+                console.log("Login failed:", data.message);
+            }
+        }
+
+        async function register() {
+            const username = document.getElementById('usernameRegister').value;
+            const password = document.getElementById('passwordRegister').value;
+
+            console.log("Register request initiated");
+
+            const response = await fetch('/api/AutentKontroler/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (response.ok) {
+                alert('Registration successful');
+                console.log("Registration successful");
+            } else {
+                alert('Registration failed');
+                console.log("Registration failed");
+            }
+        }
+
+        async function getExchangeRates() {
+            if (!isLoggedIn) {  // Sprawdzenie, czy użytkownik jest zalogowany
+                alert("Musisz się zalogować żeby widzieć te treści");
+                return;
+            }
+
+            console.log("Sending request to get exchange rates");
+
+            const response = await fetch('/api/WalutKontroler/exchange-rates', {
+                method: 'GET'
+            });
+
+            console.log("Response received:", response);
+
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('exchangeRates').innerText = JSON.stringify(data, null, 2);
+                console.log("Exchange rates:", data);
+            } else {
+                const data = await response.json();
+                alert(`Failed to fetch exchange rates: ${data.message}`);
+                console.error("Error fetching exchange rates:", data);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Wymiana Waluty</h1>
+    <div>
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <p id="loginMessage"></p>
+    </div>
+    <div>
+        <h2>Register</h2>
+        <input type="text" id="usernameRegister" placeholder="Username">
+        <input type="password" id="passwordRegister" placeholder="Password">
+        <button onclick="register()">Register</button>
+    </div>
+    <div>
+        <h2>Get Exchange Rates</h2>
+        <button onclick="getExchangeRates()">Get Exchange Rates</button>
+        <pre id="exchangeRates"></pre>
+    </div>
+</body>
+</html>
+
